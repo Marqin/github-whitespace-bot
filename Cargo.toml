@@ -1,0 +1,9 @@
+[package]
+name = "github-whitespace-bot"
+version = "0.0.1"
+authors = ["Hubert Jarosz <marqin.pl@gmail.com>"]
+
+[dependencies]
+iron = "^0.3.0"
+router = "^0.1.1"
+rustc-serialize = "^0.3.19"
