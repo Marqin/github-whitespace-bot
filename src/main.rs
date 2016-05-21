@@ -16,7 +16,7 @@ use std::process::Command;
 use crypto::digest::Digest;
 use crypto::sha1::Sha1;
 
-header! { (XGithubSignature, "X-GitHub-Signature") => [String] }
+header! { (XHubSignature, "X-Hub-Signature") => [String] }
 header! { (XGithubEvent, "X-GitHub-Event") => [String] }
 
 #[derive(RustcDecodable)]
@@ -48,7 +48,7 @@ fn check_signature(sig: String, hashed_token : String) -> bool {
 
 fn payload(req: &mut Request, hashed_token : String) -> IronResult<Response> {
 
-    let signature : String = match req.headers.get::<XGithubSignature>() {
+    let signature : String = match req.headers.get::<XHubSignature>() {
         Some(hdr) => hdr.to_string(),
         None => return Ok(Response::with((status::BadRequest, "No signature!")))
     };
