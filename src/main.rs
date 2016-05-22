@@ -29,6 +29,7 @@ struct GithubPullRequest {
 
 #[derive(RustcDecodable)]
 struct GithubPayload {
+    action: String,
     pull_request: GithubPullRequest
 }
 
@@ -86,15 +87,19 @@ fn payload(req: &mut Request, token : &str) -> IronResult<Response> {
         Err(err) => return Ok(Response::with((status::BadRequest, format!("{}", err))))
     };
 
+    if gh_payload.action != "synchronize" {
+        return Ok(Response::with((status::Ok, "We only reply to synchronize event.")))
+    };
+
     let status = check_status(gh_payload.pull_request.diff_url);
 
     let greeting = GithubResponse { msg: format!("{}", status) };
-    let payload = match json::encode(&greeting) {
+    let return_payload = match json::encode(&greeting) {
         Ok(ok) => ok,
         Err(_) => return Ok(Response::with((status::InternalServerError, "Error code: 1")))
     };
 
-    Ok(Response::with((status::Ok, payload)))
+    Ok(Response::with((status::Ok, return_payload)))
 }
 
 fn main() {
