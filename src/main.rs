@@ -87,13 +87,17 @@ fn payload(req: &mut Request, token : &str) -> IronResult<Response> {
         Err(err) => return Ok(Response::with((status::BadRequest, format!("{}", err))))
     };
 
-    if gh_payload.action != "synchronize" {
-        return Ok(Response::with((status::Ok, "We only reply to synchronize event.")))
+    let reply = match gh_payload.action.as_ref() {
+        "opened" => "This Pull Request has trailing whitespace!",
+        "synchronize" => "This Pull Request still has trailing whitespace!",
+        _ => return Ok(Response::with((status::Ok, "We only reply to open/synchronize events.")))
     };
 
-    let status = check_status(gh_payload.pull_request.diff_url);
+    if check_status(gh_payload.pull_request.diff_url) {
+        return Ok(Response::with((status::Ok, "Everything is OK with your Pull Request.")))
+    }
 
-    let greeting = GithubResponse { msg: format!("{}", status) };
+    let greeting = GithubResponse { msg: format!("{}", reply) };
     let return_payload = match json::encode(&greeting) {
         Ok(ok) => ok,
         Err(_) => return Ok(Response::with((status::InternalServerError, "Error code: 1")))
